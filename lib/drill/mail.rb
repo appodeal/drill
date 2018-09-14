@@ -2,14 +2,16 @@
 
 module Drill
   class Mail
-    attr_reader :message, :template_name
+    attr_reader :params
 
-    def initialize(message, template_name)
-      @message = message
-      @template_name = template_name
+    def initialize(params)
+      @params = params
     end
 
     def deliver
+      message = params.to_mandrill_message
+      template_name = params.template_name
+
       Drill.client.messages.send_template(template_name, [], message)
     end
   end

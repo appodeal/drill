@@ -2,9 +2,13 @@
 
 module Drill
   Params = Struct.new(
-    %i[from_name from_email reply_to cc to vars],
+    :from_name, :from_email, :reply_to, :cc, :to, :vars, :template_name,
     keyword_init: true
   ) do
+    def merge_vars(other_vars)
+      self.vars = Hash(vars).merge(other_vars)
+    end
+
     def to_mandrill_message
       message = {}
       to_emails = Array(to).map { |email| { email: email } }

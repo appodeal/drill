@@ -26,23 +26,32 @@ module Drill
     end
 
     def mail(params = {})
-      params = Params.new(params)
-      params.vars = Hash(params.vars).merge(vars)
+      params[:template_name] ||= action_name
 
-      template_name = params[:template_name] || action_name
+      params = Params.new(permitted_params(params))
+      params.merge_vars(vars_from_instance_variables)
 
-      Mail.new(params.to_mandrill_message, template_name)
+      Mail.new(params)
     end
 
     private
 
-    def vars
-      instance_variables.each.with_object({}) do |instance_variable, vars|
-        name = instance_variable.to_s.sub('@')
-        content = instance_variable_get(instance_variable)
+    def permitted_params(params)
+      params.slice(*Params.members)
+    end
 
-        vars[name] = content
-      end
+    def vars_from_instance_variables
+      permitted_instance_variables
+        .each.with_object({}) do |instance_variable, vars|
+          name = instance_variable.to_s.sub('@', '').to_sym
+          content = instance_variable_get(instance_variable)
+
+          vars[name] = content
+        end
+    end
+
+    def permitted_instance_variables
+      instance_variables - %i[@action_name]
     end
   end
 end
