@@ -1,18 +1,23 @@
 # frozen_string_literal: true
 
 module Drill
-  class Mail
-    attr_reader :params
+  module Mail
+    autoload :Default, 'drill/mail/default'
+    autoload :LetterOpener, 'drill/mail/letter_opener'
 
-    def initialize(params)
-      @params = params
+    module_function
+
+    def new(params)
+      mail.new(params)
     end
 
-    def deliver
-      message = params.to_mandrill_message
-      template_name = params.template_name
-
-      Drill.client.messages.send_template(template_name, [], message)
+    def mail
+      case Drill.configuration.delivery_method
+      when :letter_opener
+        LetterOpener
+      else
+        Default
+      end
     end
   end
 end

@@ -18,6 +18,13 @@ RSpec.describe Drill do
       it 'returns correct configuration' do
         expect(Drill.configuration.api_key).to eq(:api_key)
       end
+
+      it 'sets default configuration' do
+        aggregate_failures do
+          expect(Drill.configuration.delivery_method).to eq(:default)
+          expect(Drill.configuration.default_vars).to eq({})
+        end
+      end
     end
 
     describe '::client' do

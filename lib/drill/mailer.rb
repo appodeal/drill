@@ -30,6 +30,7 @@ module Drill
 
       params = Params.new(permitted_params(params))
       params.merge_vars(vars_from_instance_variables)
+      params.merge_vars(Drill.configuration.default_vars)
 
       Mail.new(params)
     end

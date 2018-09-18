@@ -1,32 +1,30 @@
 # frozen_string_literal: true
 
-require 'mandrill'
-
 RSpec.describe Drill::Mail do
-  let(:mail) { Drill::Mail.new(params_double) }
-  let(:params_double) do
-    instance_double(
-      Drill::Params,
-      to_mandrill_message: :message,
-      template_name: :template_name
-    )
-  end
-  let(:client_double) do
-    instance_double(Mandrill::API, messages: messages_double)
-  end
-  let(:messages_double) { instance_double(Mandrill::Messages) }
+  let(:mail_double) { class_double(Drill::Mail::Default) }
 
-  before do
-    allow(Drill).to receive(:client).and_return(client_double)
+  describe '::new' do
+    it 'delegates ::new to ::mail' do
+      params = :params
+
+      allow(Drill::Mail).to receive(:mail).and_return(mail_double)
+      expect(mail_double).to receive(:new).with(params)
+
+      Drill::Mail.new(params)
+    end
   end
 
-  describe '#deliver' do
-    it 'sends message with template' do
-      expect(messages_double)
-        .to receive(:send_template)
-        .with(:template_name, [], :message)
+  describe '::mail' do
+    it 'returns LetterOpener if delivery method is set' do
+      allow(Drill.configuration)
+        .to receive(:delivery_method)
+        .and_return(:letter_opener)
 
-      mail.deliver
+      expect(Drill::Mail.mail).to eq(Drill::Mail::LetterOpener)
+    end
+
+    it 'returns Default otherwise' do
+      expect(Drill::Mail.mail).to eq(Drill::Mail::Default)
     end
   end
 end
