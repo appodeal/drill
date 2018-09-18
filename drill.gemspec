@@ -5,7 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'drill/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'drill'
+  spec.name          = 'drill-mailer'
   spec.version       = Drill::VERSION
   spec.authors       = ['Ilya Demukh']
   spec.email         = ['i.demukh@appodeal.com']

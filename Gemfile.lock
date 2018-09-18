@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    drill (0.1.0)
+    drill-mailer (0.1.0)
       mandrill-api (~> 1.0)
 
 GEM
@@ -60,7 +60,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16)
-  drill!
+  drill-mailer!
   letter_opener (~> 1.6)
   mail (~> 2.7)
   rake (~> 10.0)
