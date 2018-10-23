@@ -26,6 +26,8 @@ module Drill
         delivery_method.deliver!(mail)
       end
 
+      alias_method :deliver_later, :deliver
+
       private
 
       def prepare_mail!
