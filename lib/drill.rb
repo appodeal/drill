@@ -2,6 +2,7 @@
 
 require 'drill/version'
 require 'drill/mailer'
+require 'drill/delivery_worker'
 require 'mandrill'
 
 module Drill

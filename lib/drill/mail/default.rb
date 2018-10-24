@@ -11,6 +11,12 @@ module Drill
         Drill.client.messages.send_template(template_name, [], message_hash)
       end
 
+      def deliver_later
+        template_name = params.template_name
+
+        Drill::DeliveryWorker.perform_async(template_name, message_hash)
+      end
+
       private
 
       def message_hash
