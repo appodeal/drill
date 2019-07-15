@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.describe Drill::Mail::Default do
-  let(:mail) { Drill::Mail::Default.new(params) }
-  let(:params) do
-    Drill::Params.new(
+  let(:mail) { Drill::Mail::Default.new(drill_params) }
+  let(:mail_params) do
+    {
       template_name: :template_name,
       from_name: 'John Doe',
       from_email: 'johndoe@email.com',
@@ -14,12 +14,15 @@ RSpec.describe Drill::Mail::Default do
         foo_bar: 'foo_bar',
         bar_foo: 'bar_foo'
       }
-    )
+    }
   end
+
+  let(:drill_params) { Drill::Params.new(mail_params) }
   let(:client_double) do
     instance_double(Mandrill::API, messages: messages_double)
   end
   let(:messages_double) { instance_double(Mandrill::Messages) }
+  let(:worker_double) { class_double(Drill::DeliveryWorker) }
 
   before do
     allow(Drill).to receive(:client).and_return(client_double)
@@ -61,11 +64,11 @@ RSpec.describe Drill::Mail::Default do
     end
 
     context 'when `to` and `cc` params are arrays' do
-      let(:params) do
-        Drill::Params.new(
+      let(:mail_params) do
+        {
           to: %w[to1@email.com to2@email.com],
           cc: %w[cc1@email.com cc2@email.com]
-        )
+        }
       end
 
       it 'sends template with correct `to` value' do
@@ -86,11 +89,33 @@ RSpec.describe Drill::Mail::Default do
       end
     end
 
+    context "when 'skip_delivery' is true" do
+      let(:mail_params) { super().merge(skip_delivery: true) }
+
+      it "doesn't send template" do
+        expect(messages_double).not_to receive(:send_template)
+
+        mail.deliver
+      end
+    end
+
     context 'when there are no params' do
-      let(:params) { Drill::Params.new }
+      let(:drill_params) { Drill::Params.new }
 
       # TODO: implement this
       xit 'handles error'
+    end
+  end
+
+  describe '#deliver_later' do
+    context "when 'skip_delivery' is true" do
+      let(:mail_params) { super().merge(skip_delivery: true) }
+
+      it "doesn't send template async" do
+        expect(worker_double).not_to receive(:perform_async)
+
+        mail.deliver_later
+      end
     end
   end
 end
