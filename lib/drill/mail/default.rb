@@ -6,12 +6,16 @@ module Drill
   module Mail
     class Default < Base
       def deliver
+        return if params.skip_delivery
+
         template_name = params.template_name
 
         Drill.client.messages.send_template(template_name, [], message_hash)
       end
 
       def deliver_later
+        return if params.skip_delivery
+
         template_name = params.template_name
 
         Drill::DeliveryWorker.perform_async(template_name, message_hash)
