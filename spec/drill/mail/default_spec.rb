@@ -22,10 +22,11 @@ RSpec.describe Drill::Mail::Default do
     instance_double(Mandrill::API, messages: messages_double)
   end
   let(:messages_double) { instance_double(Mandrill::Messages) }
-  let(:worker_double) { class_double(Drill::DeliveryWorker) }
+  let(:worker_double) { double('Drill::DeliveryWorker') }
 
   before do
     allow(Drill).to receive(:client).and_return(client_double)
+    allow(mail).to receive(:worker).and_return(worker_double)
   end
 
   describe '#deliver' do
@@ -115,6 +116,20 @@ RSpec.describe Drill::Mail::Default do
         expect(worker_double).not_to receive(:perform_async)
 
         mail.deliver_later
+      end
+    end
+
+    context 'when `wait` param is not present' do
+      it 'calls perform_async on worker' do
+        expect(worker_double).to receive(:perform_async).with(mail_params[:template_name], anything)
+        mail.deliver_later
+      end
+    end
+
+    context 'when `wait` param is present' do
+      it 'calls perform_in on worker' do
+        expect(worker_double).to receive(:perform_in).with(10, mail_params[:template_name], anything)
+        mail.deliver_later(wait: 10)
       end
     end
   end
