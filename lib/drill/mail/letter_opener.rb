@@ -21,12 +21,16 @@ module Drill
       end
 
       def deliver
+        return if params.skip_delivery
+
         prepare_mail!
 
         delivery_method.deliver!(mail)
       end
 
-      alias_method :deliver_later, :deliver
+      def deliver_later(wait: nil)
+        deliver
+      end
 
       private
 
