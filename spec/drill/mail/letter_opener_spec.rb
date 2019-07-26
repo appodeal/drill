@@ -12,12 +12,14 @@ RSpec.describe Drill::Mail::LetterOpener do
       reply_to: 'replyto@email.com',
       cc: 'cc@email.com',
       to: 'to@email.com',
+      skip_delivery: skip_delivery,
       vars: {
         foo_bar: 'foo_bar',
         bar_foo: 'bar_foo'
       }
     )
   end
+  let(:skip_delivery) { false }
   let(:mail_double) { Mail.new }
   let(:delivery_method_double) do
     instance_double(LetterOpener::DeliveryMethod, deliver!: true)
@@ -91,6 +93,34 @@ RSpec.describe Drill::Mail::LetterOpener do
 
       # TODO: implement this
       xit 'handles error'
+    end
+
+    describe '#deliver_later' do
+      context "when 'skip_delivery' is true" do
+        let(:skip_delivery) { true }
+
+        it "doesn't call " do
+          expect(delivery_method_double).not_to receive(:deliver!)
+
+          mail.deliver_later
+        end
+      end
+
+      context 'when `wait` param is not present' do
+        it 'calls perform_async on worker' do
+          expect(mail).to receive(:deliver).and_call_original
+          expect(delivery_method_double).to receive(:deliver!)
+          mail.deliver_later
+        end
+      end
+
+      context 'when `wait` param is present' do
+        it 'calls perform_in on worker' do
+          expect(mail).to receive(:deliver).and_call_original
+          expect(delivery_method_double).to receive(:deliver!)
+          mail.deliver_later(wait: 10)
+        end
+      end
     end
   end
 end

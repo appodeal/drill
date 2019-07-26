@@ -13,15 +13,23 @@ module Drill
         Drill.client.messages.send_template(template_name, [], message_hash)
       end
 
-      def deliver_later
+      def deliver_later(wait: nil)
         return if params.skip_delivery
 
         template_name = params.template_name
 
-        Drill::DeliveryWorker.perform_async(template_name, message_hash)
+        if wait
+          worker.perform_in(wait.to_i, template_name, message_hash)
+        else
+          worker.perform_async(template_name, message_hash)
+        end
       end
 
       private
+
+      def worker
+        Drill::DeliveryWorker
+      end
 
       def message_hash
         message_hash = {}
